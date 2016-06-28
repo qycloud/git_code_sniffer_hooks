@@ -88,7 +88,7 @@ def _get_receive_files(rev_old, rev_new, file_type):
 def _get_files(file_type, file_index):
   files = awk(
     grep(
-      cat("/tmp/git_hook"), "-e", "(A|M).*.%s$" % file_type,
+      cat("/tmp/git_hook"), "-P", "(A|M).*.%s$" % file_type,
       _ok_code = [0, 1]
     ),
     "{print $%s}" % file_index, _iter = True
