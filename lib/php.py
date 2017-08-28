@@ -10,9 +10,10 @@ def get_commit_errors():
 
 def _get_commit_file_error(path):
   file_sniffs = _get_sniffs(path, "emacs")
-  file_errors = _get_errors(path);
-  
-  file_errors = file_sniffs + file_errors; 
+  file_errors = _get_errors(path)
+  file_mds = _get_phpmd(path)
+
+  file_errors = file_sniffs + file_errors + file_mds
 
   if not file_errors:
     return None
@@ -20,11 +21,17 @@ def _get_commit_file_error(path):
   errors = []
   for error in file_errors:
     errorInfo = error.split(' ')
-    if errorInfo[0] == "No" or errorInfo[0] == "Errors":
-      continue
+    firstWord = errorInfo[0]
+    secondWord = errorInfo[1]
 
-    error_type = errorInfo[1]
-    if error_type == 'error':
+    if "The class" in error or "The method" in error:
+        print(colored(error, 'green'))
+        continue;
+
+    if firstWord == "No" or firstWord == "Errors":
+        continue
+
+    if secondWord == 'error':
       errors.append(colored(error, "red"))
     else:
       errors.append(colored(error, "yellow"))
@@ -68,3 +75,9 @@ def _get_errors(path):
   ).split("\n")
 
   return [error for error in errors if error]
+
+def _get_phpmd(path):
+    errors = getoutput(
+      "%s/php-bin/phpmd %s text codesize,unusedcode " % (base_path, path)
+    ).split("\n")
+    return [error for error in errors if error]
