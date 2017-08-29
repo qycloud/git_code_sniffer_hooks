@@ -5,7 +5,7 @@
 ```shell
 mkdir ~/bin/
 cd ~/bin/
-git clone git://github.com/nanjingboy/git_code_sniffer_hooks.git
+git clone https://github.com/qycloud/git_code_sniffer_hooks.git
 ```
 
 #### PHP相关依赖：
