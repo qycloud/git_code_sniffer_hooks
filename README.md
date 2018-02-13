@@ -1,13 +1,24 @@
 ## 安装：
 
-#### 代码：
-
+### 代码：
 ```shell
 mkdir ~/bin/
 cd ~/bin/
 git clone https://github.com/qycloud/git_code_sniffer_hooks.git
 ```
 
+### Docker版快速安装：
+```shell
+mkdir ~/bin/
+cd ~/bin/
+git clone https://github.com/qycloud/git_code_sniffer_hooks.git
+
+#此处假设您的项目目录为~/workspace/test
+ln -s ~/bin/git_code_sniffer_hooks/pre-commit-docker ~/workspace/test/.git/hooks/pre-commit
+```
+enjoy! P
+
+### 原生安装
 #### PHP相关依赖：
 
 ```shell
