@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ $(which docker) = "" ]; then
+    curl -sSL https://get.docker.com/ | sh
+fi
+
+sudo docker run --name codesniffer --rm -v `pwd`:/code  qycloud/git_code_sniffer_hook:180213 /bin/codesniffer/pre-commit
