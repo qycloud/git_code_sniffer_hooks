@@ -6,6 +6,7 @@ from common import get_receive_errors as get_php_receive_errors
 from config import base_path, config
 
 tmp_dir = config.get("receive", "TMP_DIR")
+phpmd_rules = config.get("receive", "PHPMD_RULES")
 
 def get_commit_errors():
   return get_php_commit_errors("php", _get_commit_file_error)
@@ -13,7 +14,7 @@ def get_commit_errors():
 def _get_commit_file_error(path):
   file_sniffs = _get_sniffs(path, "emacs")
   file_errors = _get_errors(path)
-  file_mds = _get_phpmd(path)
+  file_mds = _get_phpmd(path, phpmd_rules)
 
   file_errors = file_sniffs + file_errors + file_mds
 
@@ -51,7 +52,7 @@ def get_receive_errors_using_phpmd(rev_old, rev_new):
   return error
 
 def _get_receive_file_error_using_phpmd(path):
-  phpmd_errors = _get_phpmd(path)
+  phpmd_errors = _get_phpmd(path, phpmd_rules)
   if not phpmd_errors:
     return None
 
@@ -97,7 +98,7 @@ def _get_errors(path):
 
   return [error for error in errors if error]
 
-def _get_phpmd(path):
-    command = "%s/php-bin/phpmd %s text codesize,unusedcode " % (base_path, path)
+def _get_phpmd(path, rules):
+    command = "%s/php-bin/phpmd %s text %s " % (base_path, path, rules)
     errors = getoutput(command).split("\n")
     return [error for error in errors if error]
