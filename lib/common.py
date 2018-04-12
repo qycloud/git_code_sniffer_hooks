@@ -50,7 +50,7 @@ def get_commit_errors(file_type, function):
 
   return errors
 
-def get_receive_errors(rev_old, rev_new, file_type, function):
+def get_receive_errors(rev_old, rev_new, file_type, function, with_filename=True):
   checkable = True
   if file_type == "js":
     checkable = config.getboolean("receive", "CHECK_JAVASCRIPT")
@@ -72,7 +72,11 @@ def get_receive_errors(rev_old, rev_new, file_type, function):
     if path.exists(tmp_dir + file_path):
       file_error = function(tmp_dir + file_path)
       if file_error:
-        errors.append(file_path + file_error)
+        if with_filename:
+          error_msg = file_path + file_error
+        else:
+          error_msg = file_error
+        errors.append(error_msg)
 
   rm("-rf", tmp_dir)
   return "\n".join(errors)

@@ -2,34 +2,50 @@
 #-*- coding: utf-8 -*-
 from sys import stdin, exit
 from termcolor import colored
-from sh import cowsay
+#from sh import cowsay
 from lib.config import config
 from lib.javascript import get_receive_errors as get_javascript_errors
 from lib.php import get_receive_errors as get_php_errors
+from lib.php import get_receive_errors_using_phpmd
 
 if __name__ == "__main__":
   receive_able = True
   empty_ref = config.get("receive", "EMPTY_REF")
 
+  stdin_lines = []
   for line in stdin:
+    stdin_lines.append(line)
+
+  # php code sniffer
+  for line in stdin_lines:
     rev_old, rev_new, ref = line.split(" ")
     if rev_old == empty_ref or rev_new == empty_ref:
       continue
 
-    print(colored("CodeSniffer check result:", "magenta"))
     javascript_errors = get_javascript_errors(rev_old, rev_new)
     php_errors = get_php_errors(rev_old, rev_new)
-    if not javascript_errors and not php_errors:
-      print(colored(cowsay("Congratulations!!!"), "green", attrs = ["bold"]))
-    else:
+    if javascript_errors or php_errors:
+      print(colored("PHP Code Sniffer says:", "magenta"))
       receive_able = False
       if javascript_errors:
         print(javascript_errors)
-
       if php_errors:
         print(php_errors)
 
-  if receive_able:
-    exit(0)
-  else:
+  # phpmd
+  for line in stdin_lines:
+    rev_old, rev_new, ref = line.split(" ")
+    if rev_old == empty_ref or rev_new == empty_ref:
+      continue
+    php_errors = get_receive_errors_using_phpmd(rev_old, rev_new)
+    if php_errors:
+      print(colored("PHPMD says:", "magenta"))
+      receive_able = False
+      print(php_errors)
+
+  if not receive_able:
     exit(config.getboolean("receive", "REJECT_RECEIVE"))
+
+  exit(0)
+
+

@@ -5,6 +5,8 @@ from common import get_commit_errors as get_php_commit_errors
 from common import get_receive_errors as get_php_receive_errors
 from config import base_path, config
 
+tmp_dir = config.get("receive", "TMP_DIR")
+
 def get_commit_errors():
   return get_php_commit_errors("php", _get_commit_file_error)
 
@@ -39,9 +41,28 @@ def _get_commit_file_error(path):
   return "\n".join(errors)
 
 def get_receive_errors(rev_old, rev_new):
-  return get_php_receive_errors(
+  error = get_php_receive_errors(
     rev_old, rev_new, "php", _get_receive_file_error
   )
+  return error
+
+def get_receive_errors_using_phpmd(rev_old, rev_new):
+  error = get_php_receive_errors(rev_old, rev_new, "php", _get_receive_file_error_using_phpmd, with_filename=False)
+  return error
+
+def _get_receive_file_error_using_phpmd(path):
+  phpmd_errors = _get_phpmd(path)
+  if not phpmd_errors:
+    return None
+
+  tmp_dir_len = len(tmp_dir)
+  errors = []
+  for line in phpmd_errors:
+    pure_error = line[tmp_dir_len:]
+    pure_error = colored(pure_error, "red")
+    errors.append(pure_error)
+  return "\n".join(errors)
+
 
 def _get_receive_file_error(path):
   file_sniffs = _get_sniffs(path, "summary")
@@ -77,7 +98,6 @@ def _get_errors(path):
   return [error for error in errors if error]
 
 def _get_phpmd(path):
-    errors = getoutput(
-      "%s/php-bin/phpmd %s text codesize,unusedcode " % (base_path, path)
-    ).split("\n")
+    command = "%s/php-bin/phpmd %s text codesize,unusedcode " % (base_path, path)
+    errors = getoutput(command).split("\n")
     return [error for error in errors if error]
