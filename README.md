@@ -52,6 +52,7 @@ ln -s ~/bin/git_code_sniffer_hooks/pre-receive ~/workspace/test/.git/hooks/
 ## 手动检测：
 
 ```shell
-~/bin/git_code_sniffer_hooks/bin/phpcs ~/demo.php # PHP
+~/bin/git_code_sniffer_hooks/bin/phpcs ~/demo.php # PHP code sniffer
+~/bin/git_code_sniffer_hooks/php-bin/phpmd ~/demo.php text codesize,unusedcode,naming # PHPMD
 ~/bin/git_code_sniffer_hooks/bin/jshint ~/demo.js # JavaScript
 ```
