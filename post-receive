@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+from sys import stdin
+from termcolor import colored
+from lib.common import get_branch
+from lib.common import get_latest_commit_id
+from lib.common import get_merge_base
+
+feature_branch_prefix = 'feature/'
+
+# get current branch name and check whether feature branch
+stdin_lines = []
+for line in stdin:
+    stdin_lines.append(line)
+parts = stdin_lines[0].split(" ")
+branch = get_branch(parts[2])
+
+if not branch.startswith(feature_branch_prefix):
+    exit(0)
+
+master_last_commit_id = get_latest_commit_id()
+merge_base = get_merge_base("master", branch)
+
+# master有新的提交，提示合并分支
+if not merge_base.startswith(master_last_commit_id):
+    print("*************************************")
+    print(colored("远程master分支有新的合并，请更新本地master分支", on_color='on_yellow'))
+    print(colored("并及时将最新的master合并入开发分支", on_color='on_yellow'))
+    print("*************************************")
+
+exit(0)
