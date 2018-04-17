@@ -22,7 +22,7 @@ if __name__ == "__main__":
             continue
         
         javascript_errors = None
-        if config.get("receive", "CHECK_JAVASCRIPT"):
+        if config.getboolean("receive", "CHECK_JAVASCRIPT"):
             javascript_errors = get_javascript_errors(rev_old, rev_new)
         php_errors = get_php_errors(rev_old, rev_new)
         if javascript_errors or php_errors:

@@ -87,6 +87,8 @@ def get_receive_errors(rev_old, rev_new, file_type, function, with_filename=True
     tmp_dir = config.get("receive", "TMP_DIR")
     errors = []
     for file_path in files:
+        if not path.exists(file_path):
+            continue
         mkdir("-p", "/".join((tmp_dir + file_path).split("/")[:-1]))
         system("git show %s:%s > %s" % (rev_new, file_path, tmp_dir + file_path))
         if path.exists(tmp_dir + file_path):
