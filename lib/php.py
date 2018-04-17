@@ -1,4 +1,6 @@
 #-*- coding:utf-8 -*-
+
+import os.path
 from commands import getoutput
 from termcolor import colored
 from common import get_commit_errors as get_php_commit_errors
@@ -66,6 +68,9 @@ def _get_receive_file_error_using_phpmd(path):
 
 
 def _get_receive_file_error(path):
+  if not os.path.exists(path):
+    return None
+  
   file_sniffs = _get_sniffs(path, "summary")
   if not file_sniffs:
     return None
