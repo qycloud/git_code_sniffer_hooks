@@ -21,7 +21,9 @@ if __name__ == "__main__":
         if rev_old == empty_ref or rev_new == empty_ref:
             continue
         
-        javascript_errors = get_javascript_errors(rev_old, rev_new)
+        javascript_errors = None
+        if config.getboolean("receive", "CHECK_JAVASCRIPT"):
+            javascript_errors = get_javascript_errors(rev_old, rev_new)
         php_errors = get_php_errors(rev_old, rev_new)
         if javascript_errors or php_errors:
             print(colored("PHP Code Sniffer says:", "magenta"))

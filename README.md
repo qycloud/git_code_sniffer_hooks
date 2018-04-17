@@ -53,6 +53,6 @@ ln -s ~/bin/git_code_sniffer_hooks/pre-receive ~/workspace/test/.git/hooks/
 
 ```shell
 ~/bin/git_code_sniffer_hooks/bin/phpcs ~/demo.php # PHP code sniffer
-~/bin/git_code_sniffer_hooks/php-bin/phpmd ~/demo.php text codesize,unusedcode,naming # PHPMD
+~/bin/git_code_sniffer_hooks/php-bin/phpmd ~/demo.php text unusedcode # PHPMD
 ~/bin/git_code_sniffer_hooks/bin/jshint ~/demo.js # JavaScript
 ```
