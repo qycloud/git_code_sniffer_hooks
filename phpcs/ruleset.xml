@@ -6,6 +6,9 @@
         <exclude name="PEAR.ControlStructures.ControlSignature"/>
         <exclude name="Zend.NamingConventions.ValidVariableName"/>
     </rule>
+    <rule ref="phpcs.NamingConventions.ValidVariableName.PrivateNoUnderscore">
+        <severity>0</severity>
+    </rule>
 
     <rule ref="Squiz.WhiteSpace.OperatorSpacing"/>
     <rule ref="Squiz.WhiteSpace.SemicolonSpacing"/>
