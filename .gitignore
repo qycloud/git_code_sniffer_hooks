@@ -4,3 +4,4 @@ node_modules/
 vendor/
 php-bin/
 /.idea
+/.log.txt

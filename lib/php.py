@@ -5,6 +5,7 @@ from termcolor import colored
 from common import get_commit_errors as get_php_commit_errors
 from common import get_receive_errors as get_php_receive_errors
 from config import base_path, config
+from lib.log import log
 
 tmp_dir = config.get("receive", "TMP_DIR")
 phpmd_rules = config.get("receive", "PHPMD_RULES")
@@ -71,9 +72,17 @@ def _get_receive_file_error(path):
   if not file_sniffs:
     return None
 
-  file_error = file_sniffs[-2].split(" ")
-  error_count = int(file_error[3])
-  warning_count = int(file_error[6])
+  try:
+    file_error = file_sniffs[-2].split(" ")
+    error_count = int(file_error[3])
+    warning_count = int(file_error[6])
+  except ValueError, e:
+    log('_get_receive_file_error error:' + e.message, path, file_error, file_sniffs)
+    raise e
+  except TypeError, e:
+    log('_get_receive_file_error error:' + e.message, path, file_error, file_sniffs)
+    raise e
+  
   error = colored("%s error(s)" % error_count, "red")
   warning = colored("%s warning(s)" % warning_count, "yellow")
 
