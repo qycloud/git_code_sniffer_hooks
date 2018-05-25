@@ -17,3 +17,4 @@ def log(msg, *argv):
             msg += repr(arg) + '\n'
     
     fd.write(msg + '\n')
+    fd.close()
