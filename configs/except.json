@@ -1,4 +1,5 @@
 [
+  "core/Route/Aliases.php",
   "view",
   "extend",
   "public/components",
