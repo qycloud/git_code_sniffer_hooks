@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
+import hashlib
+
 from os import path, system
 from commands import getoutput
 from sh import awk, grep, cat, mkdir, rm
 from termcolor import colored
-from config import config, except_paths
+from config import config, except_paths, base_path
 
 
 def get_branch(ref_name):
@@ -79,7 +81,7 @@ def get_receive_errors(rev_old, rev_new, file_type, function, with_filename=True
     
     if not checkable:
         return None
-    
+    # 改动文件的相对路径
     files = _get_receive_files(rev_old, rev_new, file_type)
     if not files:
         return None
@@ -87,22 +89,32 @@ def get_receive_errors(rev_old, rev_new, file_type, function, with_filename=True
     tmp_dir = config.get("receive", "TMP_DIR")
     errors = []
     for file_path in files:
-        mkdir("-p", "/".join((tmp_dir + file_path).split("/")[:-1]))
-        
-        show = getoutput("git show %s:%s > %s" % (rev_new, file_path, tmp_dir + file_path))
+        # 临时文件名
+        source_file_path = tmp_dir + file_path
+        mkdir("-p", "/".join(source_file_path.split("/")[:-1]))
+        # 将文件内容写入临时文件
+        show = getoutput("git show %s:%s > %s" % (rev_new, file_path, source_file_path))
         if show != '':
             continue
-        
-        if path.exists(tmp_dir + file_path):
-            file_error = function(tmp_dir + file_path)
+        if path.exists(source_file_path):
+            # cache
+            checksum = _file_checksum(source_file_path)
+            checked, msg = _get_cached_check_result(checksum, function)
+            if checked:
+                if len(msg) > 0:
+                    error_msg = file_path + msg if with_filename else msg
+                    errors.append(error_msg)
+                continue
+            file_error = function(source_file_path)
             if file_error:
                 if with_filename:
                     error_msg = file_path + file_error
                 else:
                     error_msg = file_error
                 errors.append(error_msg)
-    
-    rm("-rf", tmp_dir)
+            _set_check_cache(checksum, function, file_error)
+    # 临时文件交给系统处理
+    # rm("-rf", tmp_dir)
     return "\n".join(errors)
 
 
@@ -140,3 +152,30 @@ def _get_files(file_type, file_index):
                 except_files.append(file_path)
     
     return [file_path for file_path in files if file_path not in except_files]
+
+
+def _get_cached_check_result(checksum, func):
+    try:
+        f = open(_cache_filename(checksum, func), 'r')
+        msg = f.read()
+        f.close()
+        return True, msg
+    except IOError:
+        return False, ''
+
+
+def _file_checksum(filepath):
+    return hashlib.md5(open(filepath, 'rb').read()).hexdigest()
+
+
+def _set_check_cache(checksum, func, msg):
+    try:
+        f = open(_cache_filename(checksum, func), 'w')
+    except IOError:
+        f = open(_cache_filename(checksum, func), 'w')
+    f.write(msg)
+    f.close()
+
+
+def _cache_filename(checksum, func):
+    return base_path + '/cache/' + func.__name__ + '-' + checksum + '.cache'

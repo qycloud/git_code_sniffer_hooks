@@ -17,6 +17,7 @@ if __name__ == "__main__":
     
     # php code sniffer
     for line in stdin_lines:
+        # rev_old, rev_new是commit id
         rev_old, rev_new, ref = line.split(" ")
         if rev_old == empty_ref or rev_new == empty_ref:
             continue
