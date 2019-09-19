@@ -173,7 +173,10 @@ def _set_check_cache(checksum, func, msg):
         f = open(_cache_filename(checksum, func), 'w')
     except IOError:
         f = open(_cache_filename(checksum, func), 'w')
-    f.write(msg)
+    if msg is None:
+        f.write('')
+    else:
+        f.write(str(msg))
     f.close()
 
 

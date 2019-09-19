@@ -27,7 +27,7 @@ if __name__ == "__main__":
             javascript_errors = get_javascript_errors(rev_old, rev_new)
         php_errors = get_php_errors(rev_old, rev_new)
         if javascript_errors or php_errors:
-            print(colored("PHP Code Sniffer says:", "magenta"))
+            print(colored("PHP Code Sniffer------", "magenta"))
             receive_able = False
             if javascript_errors:
                 print(javascript_errors)
@@ -41,7 +41,7 @@ if __name__ == "__main__":
             continue
         php_errors = get_receive_errors_using_phpmd(rev_old, rev_new)
         if php_errors:
-            print(colored("PHPMD says:", "magenta"))
+            print(colored("PHPMD------", "magenta"))
             receive_able = False
             print(php_errors)
     

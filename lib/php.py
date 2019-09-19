@@ -5,43 +5,39 @@ from termcolor import colored
 from common import get_commit_errors as get_php_commit_errors
 from common import get_receive_errors as get_php_receive_errors
 from config import base_path, config
-from lib.log import log
 
 tmp_dir = config.get("receive", "TMP_DIR")
 phpmd_rules = config.get("receive", "PHPMD_RULES")
+phpcs_report = config.get("receive", "PHPCS_REPORT")
 
 def get_commit_errors():
   return get_php_commit_errors("php", _get_commit_file_error)
 
 def _get_commit_file_error(path):
-  file_sniffs = _get_sniffs(path, "emacs")
+  file_sniffs = _get_sniffs(path, phpcs_report)
   file_errors = _get_errors(path)
   file_mds = _get_phpmd(path, phpmd_rules)
 
-  file_errors = file_sniffs + file_errors + file_mds
-
-  if not file_errors:
+  if not file_errors and not file_mds and not file_sniffs:
     return None
-
-  errors = []
-  for error in file_errors:
-    errorInfo = error.split(' ')
-    firstWord = errorInfo[0]
-    secondWord = errorInfo[1]
-
-    if "The class" in error or "The method" in error:
-        print(colored(error, 'green'))
-        continue;
-
-    if firstWord == "No" or firstWord == "Errors":
+  
+  msg = ""
+  if len(file_sniffs) > 0:
+    msg += "\nPHP Code Sniffer------\n" + colored("\n".join(file_sniffs), "red")
+  if len(file_mds) > 0:
+    msg += "\nPHPMD------\n" + colored("\n".join(file_mds), "red")
+  
+  php_errors = []
+  if len(file_errors) > 0:
+    for err in file_errors:
+      errInfo = err.split(' ')
+      if errInfo[0] == "No":
         continue
-
-    if secondWord == 'error':
-      errors.append(colored(error, "red"))
-    else:
-      errors.append(colored(error, "yellow"))
-
-  return "\n".join(errors)
+      php_errors.append(err)
+  if len(php_errors) > 0:
+    msg += "\nPHP Syntax check------\n" + colored("\n".join(php_errors), "red")
+  
+  return msg
 
 def get_receive_errors(rev_old, rev_new):
   error = get_php_receive_errors(
@@ -68,33 +64,15 @@ def _get_receive_file_error_using_phpmd(path):
 
 
 def _get_receive_file_error(path):
-  file_sniffs = _get_sniffs(path, "summary")
+  file_sniffs = _get_sniffs(path, phpcs_report)
   if not file_sniffs:
     return None
 
-  try:
-    file_error = file_sniffs[-2].split(" ")
-    error_count = int(file_error[3])
-    warning_count = int(file_error[6])
-  except ValueError, e:
-    log('_get_receive_file_error error:' + e.message, path, file_error, file_sniffs)
-    raise e
-  except TypeError, e:
-    log('_get_receive_file_error error:' + e.message, path, file_error, file_sniffs)
-    raise e
-  
-  error = colored("%s error(s)" % error_count, "red")
-  warning = colored("%s warning(s)" % warning_count, "yellow")
-
-  if error_count > 0 and warning_count > 0:
-    return "    %s  %s" % (error, warning)
-
-  if error_count > 0 or warning_count > 0:
-    return "    %s" % (error if error_count > 0 else warning)
-
-  return None
+  return "\n".join(file_sniffs)
 
 def _get_sniffs(path, report):
+  if not report:
+    report = "full"
   errors = getoutput(
     "%s/bin/phpcs --report=%s %s" % (base_path, report, path)
   ).split("\n")
